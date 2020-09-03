@@ -1,4 +1,4 @@
-from numpy import *
+import numpy as np
 class Node:
 
     def __init__(self, data):
@@ -61,6 +61,13 @@ class Decision_tree:
         column = X[:, col]
         selected = [val for val in column if func(val, split)]
         return len(selected)/len(column)
+
+    
+    def get_column(col, matrix):
+        return get_X(matrix[])
+    
+    def get_avg(column):
+        pass
 
 
 
