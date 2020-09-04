@@ -39,6 +39,7 @@ class Decision_tree:
     
     def less(self, x, y):
         return x<y
+
     def greater(self, x, y):
         return x>y
 
@@ -61,13 +62,12 @@ class Decision_tree:
         column = X[:, col]
         selected = [val for val in column if func(val, split)]
         return len(selected)/len(column)
-
     
-    def get_column(col, matrix):
-        return get_X(matrix[])
+    def get_column(self, column, matrix):
+        return matrix[column]
     
-    def get_avg(column):
-        pass
+    def get_avg(self, column):
+        np.average(column)
 
 
 
