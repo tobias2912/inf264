@@ -1,6 +1,6 @@
 import numpy as np
 import csv
-from tree.py import * 
+from tree import * 
 
 def get_X(liste):
     return liste[:, :4]
@@ -17,6 +17,7 @@ if __name__ == "__main__":
     print('LISTE: ', liste)
     print('X: ', get_X(liste))
     print('LABEL: ', get_lable(liste))
-
-    Des
+    X = get_X(liste)
+    y = get_lable(liste)
+    tree = Decision_tree(X, y)
 
