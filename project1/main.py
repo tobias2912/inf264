@@ -14,16 +14,14 @@ def get_lable(liste):
 def open_file(fileName): 
     return np.loadtxt(open(fileName, "rb"), delimiter=",")
 
-def split(matrix):
 
 
 
 if __name__ == "__main__":
     liste = open_file('data_banknote_authentication.txt')
-    print('LISTE: ', liste)
-    print('X: ', get_matrix(liste))
-    print('LABEL: ', get_lable(liste))
-    X = get_X(liste)
+    X = get_matrix(liste)
     y = get_lable(liste)
-    tree = Decision_tree(X, y)
+    print(X)
+    tree = Decision_tree()
+    tree.learn(X, y, tree.root)
 
