@@ -36,16 +36,15 @@ class Decision_tree:
 
     def get_avg(self, col, X):
         c = X[:,col]
-        print(c)
         avg = c.mean(axis=0)
         return avg
 
-    def split_X(self, X, func, best_col, split):
-        #select rows from matrix where func(best_col) is true
+    def split(self, X, y, func, best_col, split):
+         #select rows from matrix where func(best_col) is true 
         rows = []
-        for row in X:
+        for count, row in enumerate(X):
             if func(row[best_col], split):
-                rows.append(row)
+                rows.append(np.append(row, y[count]))
         return np.array(rows)
 
     def less(self, x, y):
@@ -61,7 +60,6 @@ class Decision_tree:
         #if all features identical, return most common y
         #try every column to find best gain
         _, cols= X.shape
-        print(cols)
         col_gains = []
         for col in range(cols):
             print(f"getting avg of column {col}")
@@ -78,11 +76,14 @@ class Decision_tree:
         right = Node("")
         node.right = right 
         #recursive learn both branches by splitting on the X value
-        leftX = self.split_X(X, self.less, best_col, split_value)
-        rightX = self.split_X(X, self.greater, best_col, split_value)
-        #TODO split y
-        self.learn(leftX, y, left, impurity_measure)
-        self.learn(rightX, y, right, impurity_measure)
+        leftXy = self.split(X,y, self.less, best_col, split_value)
+        rightXy = self.split(X,y, self.greater, best_col, split_value)
+        leftX = leftXy[:,:4]
+        rightX = rightXy[:,:4]
+        lefty = leftXy[:,4]
+        righty = rightXy[:,4]
+        self.learn(leftX, lefty, left, impurity_measure)
+        self.learn(rightX, righty, right, impurity_measure)
 
     def predict(self, x):
         pass
