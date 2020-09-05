@@ -19,5 +19,7 @@ if __name__ == "__main__":
     print(X)
     tree = Decision_tree()
     tree.learn(X, y, tree.root)
-    print(tree)
+    tree.print_tree()
+    new = np.array([3.6216,8.6661,-2.8073,-0.44699])
+    tree.predict(new, tree.root)
 

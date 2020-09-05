@@ -6,16 +6,23 @@ class Node:
         self.left = None
         self.right = None
         self.data = data #split value
+        self.column = None # column to split on
         self.func = None
         self.y = None
 
     def __repr__(self):
         return f"Node( data {self.data}, y {self.y}) children: (" + self.left.__repr__() + self.right.__repr__()+ ")"
 
-    def PrintTree(self):
-        print(self.data)
+    def PrintTree(self, depth):
+        if self.left is None or self.right is None:
+            print ( (depth*"--") + f"Leaf Node( data {self.data}, y {self.y})" )
+            return
+        print ( (depth*"--") + f"Node( data {self.data}, y {self.y}) children:" )
+        self.left.PrintTree(depth+1) 
+        self.right.PrintTree(depth+1)
 
-    def insert(self, data):
+
+    def insert(self, data): 
         if self.data:
             if data < self.data:
                 if self.left is None:
@@ -38,7 +45,11 @@ class Decision_tree:
         self.root = Node("")
 
     def __repr__(self):
-        return self.root.__repr__()
+        self.root.PrintTree(0)
+        return ""
+
+    def print_tree(self):
+        self.root.PrintTree(0)
 
     def get_avg(self, col, X):
         c = X[:,col]
@@ -92,6 +103,7 @@ class Decision_tree:
         best_col, best_gain, split_value = max(col_gains, key=lambda tup: tup[1])
         print(f"splits on {best_col}")
         node.data = split_value
+        node.column = best_col
         #create two branches 
         left = Node("")
         node.left = left 
@@ -107,8 +119,21 @@ class Decision_tree:
         self.learn(leftX, lefty, left, impurity_measure)
         self.learn(rightX, righty, right, impurity_measure)
 
-    def predict(self, x):
-        pass
+    def predict(self, x, node):
+        '''
+        x: vector
+        take left or right in a node and recurively predict until reaching a leaf
+        '''
+        if node.left is None or node.right is None:
+            print(node.y)
+        column = node.column
+        split_value = node.column
+        left = x[column] < split_value
+        if left:
+            self.predict(x, node.left)
+        else:
+            self.predict(x, node.right)
+        
     
 
     #entropy of variable, not used?
