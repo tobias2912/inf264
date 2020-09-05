@@ -12,9 +12,6 @@ def get_lable(liste):
 def open_file(fileName): 
     return np.loadtxt(open(fileName, "rb"), delimiter=",")
 
-
-
-
 if __name__ == "__main__":
     liste = open_file('project1/data_banknote_authentication.txt')
     X = get_X(liste)
@@ -22,4 +19,5 @@ if __name__ == "__main__":
     print(X)
     tree = Decision_tree()
     tree.learn(X, y, tree.root)
+    print(tree)
 

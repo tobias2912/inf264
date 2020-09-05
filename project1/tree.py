@@ -5,9 +5,12 @@ class Node:
 
         self.left = None
         self.right = None
-        self.data = data
+        self.data = data #split value
         self.func = None
+        self.y = None
 
+    def __repr__(self):
+        return f"Node( data {self.data}, y {self.y}) children: (" + self.left.__repr__() + self.right.__repr__()+ ")"
 
     def PrintTree(self):
         print(self.data)
@@ -32,7 +35,10 @@ class Decision_tree:
     root = Node("")
 
     def __init__(self):
-        root = Node("")
+        self.root = Node("")
+
+    def __repr__(self):
+        return self.root.__repr__()
 
     def get_avg(self, col, X):
         c = X[:,col]
@@ -47,17 +53,32 @@ class Decision_tree:
                 rows.append(np.append(row, y[count]))
         return np.array(rows)
 
+    def get_common_y(self, y):
+        return np.bincount(y).argmax()
+
+
+
+
     def less(self, x, y):
         return x<=y
-        
     def greater(self, x, y):
         return x>y
     def learn(self, X, y, node, impurity_measure='entropy'):
         if node is None:
             raise Exception("node is None")
         #if all y is same label, return leaf
-
+        if np.all(y) or not np.any(y):
+            node.y = y[0]
+            return
         #if all features identical, return most common y
+        identical = True
+        for row in X:
+            if np.any(row != X[0]):
+                identical = False
+        if identical:
+            node.y = self.get_common_y(y)
+            print(node.y)
+            return
         #try every column to find best gain
         _, cols= X.shape
         col_gains = []
@@ -70,6 +91,7 @@ class Decision_tree:
         #select column that gave highest information gain
         best_col, best_gain, split_value = max(col_gains, key=lambda tup: tup[1])
         print(f"splits on {best_col}")
+        node.data = split_value
         #create two branches 
         left = Node("")
         node.left = left 
