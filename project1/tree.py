@@ -139,8 +139,8 @@ class Decision_tree:
             self.predict(x, node.left)
         else:
             self.predict(x, node.right)
-        
-    
+   
+
 
     #entropy of variable, not used?
     def H(self, x, split, X, func, col):
@@ -166,7 +166,7 @@ class Decision_tree:
         column = self.get_column(col, X)
         selected = [val for val in column if func(val, split)]
         return len(selected)/len(column)
-    
+   
     def get_column(self, col, X):
         return X[:, col]
-    
+ 
