@@ -64,8 +64,21 @@ class Decision_tree:
                 return False
         return True
 
-    def get_best_IG(self, X):
+    def get_best_IG(self, X, impurity_measure):
         '''select column/feature that gives highest information gain'''
+        _, cols= X.shape
+        col_gains = []
+        for col in range(cols):
+            print(f"getting avg of column {col}")
+            split_value = self.get_avg(col, X)
+            gain = self.IG(col, split_value, X, impurity_measure)
+            print(f"information gain: {gain}")
+            col_gains.append((col, gain, split_value))
+        #select column that gave highest information gain
+        return max(col_gains, key=lambda tup: tup[1])
+
+    def get_best_gini(self, X):
+        '''select column/feature that gives Gini'''
         _, cols= X.shape
         col_gains = []
         for col in range(cols):
@@ -76,7 +89,6 @@ class Decision_tree:
             col_gains.append((col, gain, split_value))
         #select column that gave highest information gain
         return max(col_gains, key=lambda tup: tup[1])
-
     def learn(self, X, y, node, impurity_measure='entropy'):
         '''
         Build a decision tree with node as a root
@@ -93,7 +105,7 @@ class Decision_tree:
             node.y = self.get_common_y(y)
             return
         #try every column to find best gain
-        best_col, best_gain, split_value = self.get_best_IG(X)
+        best_col, best_gain, split_value = self.get_best_IG(X, impurity_measure)
         print(f"splits on {best_col}")
         # inserts data into node
         node.data = split_value
@@ -135,15 +147,18 @@ class Decision_tree:
         pass
         #return self.P(x, X) * np.log2(P(x, X) * self.P(not x, X))
 
-    def Hcond(self, split, X, func, col):
+    def Hcond(self, split, X, func, col, impurity_measure):
         '''conditional entropy'''
         prob = self.P(X, self.less, split,  col)
-        return -prob * np.log2(prob) -(1-prob) * np.log2(1-prob)
+        if impurity_measure=="entropy":
+            return -prob * np.log2(prob) -(1-prob) * np.log2(1-prob)
+        elif impurity_measure=="gini":
+            return -prob * (1-(prob)) -(1-prob) * (1-(1-prob))
 
-    def IG(self,  col, split, X):
-        '''calculate information gain given a split''' 
+    def IG(self,  col, split, X, impurity_measure):
+        '''calculate information gain based on entropy given a split''' 
         #ignores H(y) from calculation
-        ig = - self.Hcond( split, X, self.less, col) - (self.Hcond( split, X, self.greater, col))
+        ig = - self.Hcond( split, X, self.less, col, impurity_measure) - (self.Hcond( split, X, self.greater, col, impurity_measure))
         return ig
 
     def P(self, X, func, split, col): 
