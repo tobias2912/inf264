@@ -77,18 +77,7 @@ class Decision_tree:
         #select column that gave highest information gain
         return max(col_gains, key=lambda tup: tup[1])
 
-    def get_best_gini(self, X):
-        '''select column/feature that gives Gini'''
-        _, cols= X.shape
-        col_gains = []
-        for col in range(cols):
-            print(f"getting avg of column {col}")
-            split_value = self.get_avg(col, X)
-            gain = self.IG(col, split_value, X)
-            print(f"information gain: {gain}")
-            col_gains.append((col, gain, split_value))
-        #select column that gave highest information gain
-        return max(col_gains, key=lambda tup: tup[1])
+
     def learn(self, X, y, node, impurity_measure='entropy'):
         '''
         Build a decision tree with node as a root
