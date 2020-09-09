@@ -128,6 +128,11 @@ class Decision_tree:
 
     
     def predict2(self, node, x):
+        '''
+        param x: vector
+        param node: node to select right or left child
+        take left or right in a node and recurively predict until reaching a leaf
+        '''
         assert(isinstance(node, Node))
         column = node.column
         split_value = node.column
@@ -139,25 +144,6 @@ class Decision_tree:
         else:
             return self.predict2(node.right, x)
    
-
-
-    
-    def predict(self, x, node):
-        '''
-        param x: vector
-        param node: node to select right or left child
-        take left or right in a node and recurively predict until reaching a leaf
-        '''
-        if node.left is None or node.right is None:
-            print(node.y)
-        column = node.column
-        split_value = node.column
-        left = x[column] < split_value
-        if left:
-            self.predict(x, node.left)
-        else:
-            self.predict(x, node.right)
-
 
     #entropy of variable, not used?
     def H(self, x, split, X, func, col):
