@@ -16,7 +16,7 @@ class Node:
             return
         print ( (depth*"--") + f"Node( data {self.data}, y {self.y}) children:" )
         self.left.PrintTree(depth+1) 
-        self.right.PrintTree(depth+1)
+        self.right.PrintTree(depth+1)  
 
 class Decision_tree:
 
@@ -86,6 +86,8 @@ class Decision_tree:
             raise Exception("node is None")
         #if all y is same label, return leaf
         if np.all(y) or not np.any(y):
+            
+            print(f"node: {node}, y: {y}")
             node.y = y[0]
             return
         #if all features identical, return most common y
@@ -112,6 +114,22 @@ class Decision_tree:
         self.learn(leftX, lefty, left, impurity_measure)
         self.learn(rightX, righty, right, impurity_measure)
 
+    
+    def predict2(self, node, x):
+        assert(isinstance(node, Node))
+        column = node.column
+        split_value = node.column
+        if node.left is None or node.right is None:
+            print(node.y)
+            return node.y
+        if x[column] < split_value:
+            return self.predict2(node.left, x)
+        else:
+            return self.predict2(node.right, x)
+   
+
+
+    """
     def predict(self, x, node):
         '''
         param x: vector
@@ -126,9 +144,8 @@ class Decision_tree:
         if left:
             self.predict(x, node.left)
         else:
-            self.predict(x, node.right)
-        
-    
+            self.predict(x, node.right)"""
+
 
     #entropy of variable, not used?
     def H(self, x, split, X, func, col):
