@@ -18,15 +18,18 @@ if __name__ == "__main__":
     y = get_lable(liste)
     X_train, X_test = X[:1000], X[1000:]
     y_train, y_test = y[:1000], y[1000:]
-    print(f"train: {X_train}")
-    print(f"test:{X_test}")
     tree = Decision_tree()
     tree.learn(X_train, y_train, tree.root)
-    
-    #tree.print_tree()
     new = np.array([-0.10234,1.8189,-2.2169,-0.56725])
     val = tree.predict(tree.root, new)
     print(f"value is {val}")
     wrong = 0
     correct = 0
-    for x in X_test
+    for rownumber, x in enumerate(X_test):
+        predicted_val = tree.predict(tree.root, x)
+        if predicted_val == y_train[rownumber]:
+            correct += 1
+        else:
+            wrong += 1
+    print(correct, wrong)
+    print(f"correctness {correct/(correct+wrong)}")

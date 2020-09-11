@@ -77,7 +77,6 @@ class Decision_tree:
         #select column that gave highest information gain
         return max(col_gains, key=lambda tup: tup[1])
 
-
     def learn(self, X, y, node, impurity_measure='entropy'):
         '''
         Build a decision tree with node as a root
@@ -95,7 +94,6 @@ class Decision_tree:
             return
         #try every column to find best gain
         best_col, best_gain, split_value = self.get_best_IG(X, impurity_measure)
-        print(f"splits on {best_col}")
         # inserts data into node
         node.data = split_value
         node.column = best_col
@@ -158,4 +156,3 @@ class Decision_tree:
    
     def get_column(self, col, X):
         return X[:, col]
- 
