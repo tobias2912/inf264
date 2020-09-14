@@ -12,11 +12,16 @@ class Node:
 
     def PrintTree(self, depth):
         if self.left is None or self.right is None:
-            print ( (depth*"--") + f"Leaf Node( data {self.data}, y {self.y})" )
+            print ( (depth*"--") + f"Leaf Node( y {self.y})" )
             return
-        print ( (depth*"--") + f"Node( data {self.data}, y {self.y}) children:" )
+        print ( (depth*"--") + f"Node( column: {self.column}, data {self.data}, y {self.y}) children:" )
         self.left.PrintTree(depth+1) 
         self.right.PrintTree(depth+1)  
+
+    def __repr__(self):
+        if self.right is None and self.left is None:
+           return f"leaf with label {self.y}"
+        return f"Node with y: {self.y}"
 
 class Decision_tree:
 
@@ -50,8 +55,8 @@ class Decision_tree:
 
     def get_common_y(self, y):
         '''return most common value in vector y'''
-        return np.bincount(y).argmax()
-
+        counts = np.bincount(y.astype(int))
+        return (np.argmax(counts))
     def less(self, x, y):
         return x<=y
     def greater(self, x, y):
@@ -64,15 +69,15 @@ class Decision_tree:
                 return False
         return True
 
-    def get_best_IG(self, X, impurity_measure):
+    def get_best_IG(self, X, impurity_measure, y):
         '''select column/feature that gives highest information gain'''
         _, cols= X.shape
         col_gains = []
         for col in range(cols):
             print(f"getting avg of column {col}")
             split_value = self.get_avg(col, X)
-            gain = self.IG(col, split_value, X, impurity_measure)
-            print(f"information gain: {gain}")
+            gain = self.IG(col, split_value, X, impurity_measure, y)
+            print(f"information gain for column {col}: {gain}")
             col_gains.append((col, gain, split_value))
         #select column that gave highest information gain
         return max(col_gains, key=lambda tup: tup[1])
@@ -95,20 +100,21 @@ class Decision_tree:
         Build a decision tree with node as a root
         either calls itself recursively, or sets node as a root with a label
         '''
+        print("starts learn()")
         if node is None:
             raise Exception("node is None")
         #if all y is same label, return leaf
         if np.all(y) or not np.any(y):
-            
-            print(f"node: {node}, y: {y}")
             node.y = y[0]
+            print(f"creates leaf node: {node}")
             return
         #if all features identical, return most common y
         if self.all_identical(X):
             node.y = self.get_common_y(y)
+            print(f"creates leaf node: {node}")
             return
         #try every column to find best gain
-        best_col, best_gain, split_value = self.get_best_IG(X, impurity_measure)
+        best_col, best_gain, split_value = self.get_best_IG(X, impurity_measure, y)
         print(f"splits on {best_col}")
         # inserts data into node
         node.data = split_value
@@ -120,6 +126,12 @@ class Decision_tree:
         #recursive learn both branches by splitting on the X value
         leftXy = self.split(X,y, self.less, best_col, split_value)
         rightXy = self.split(X,y, self.greater, best_col, split_value)
+        if leftXy.size==0 or rightXy.size==0:
+            #is leaf
+            node.left = None
+            node.right = None
+            node.y = self.get_common_y(y)
+            return
         leftX = leftXy[:,:4]
         rightX = rightXy[:,:4]
         lefty = leftXy[:,4]
@@ -136,40 +148,42 @@ class Decision_tree:
         '''
         assert(isinstance(node, Node))
         column = node.column
-        split_value = node.column
+        split_value = node.data
         if node.left is None or node.right is None:
-            print(node.y)
+            #print("found leaf", node.y)
             return node.y
         if x[column] < split_value:
-            return self.predict2(node.left, x)
+            #print("going left")
+            return self.predict(node.left, x)
         else:
-            return self.predict2(node.right, x)
-   
+            #print("going right")
+            return self.predict(node.right, x)
 
-    #entropy of variable, not used?
-    def H(self, x, split, X, func, col):
-        pass
-        #return self.P(x, X) * np.log2(P(x, X) * self.P(not x, X))
-
-    def Hcond(self, split, X, func, col, impurity_measure):
-        '''conditional entropy'''
-        prob = self.P(X, self.less, split,  col)
+    def Hcond(self, split, X, func, col, impurity_measure, y):
+        '''conditional entropy for one part of the split'''
+        prob = self.P(X, func,  split,  col, y)
+        if prob == 0 or prob == 1:
+            return 0
         if impurity_measure=="entropy":
             return -prob * np.log2(prob) -(1-prob) * np.log2(1-prob)
         elif impurity_measure=="gini":
             return -prob * (1-(prob)) -(1-prob) * (1-(1-prob))
 
-    def IG(self,  col, split, X, impurity_measure):
+    def IG(self,  col, split, X, impurity_measure, y):
         '''calculate information gain based on entropy given a split''' 
         #ignores H(y) from calculation
-        ig = - self.Hcond( split, X, self.less, col, impurity_measure) - (self.Hcond( split, X, self.greater, col, impurity_measure))
+        ig = - self.Hcond( split, X, self.less, col, impurity_measure, y) - (self.Hcond( split, X, self.greater, col, impurity_measure, y))
         return ig
 
-    def P(self, X, func, split, col): 
-        ''' probability that random x is higher/lower'''
+    def P(self, X, func, split, col, y): 
+        '''splits X into two, and finds probability of y being a 0 in the lower/greater part of split'''
         column = self.get_column(col, X)
-        selected = [val for val in column if func(val, split)]
-        return len(selected)/len(column)
+        selectedrows = [i for i, val in enumerate(column) if func(val, split)]
+        selectedY = [val for i, val in enumerate(y) if i in selectedrows]
+        Yzero = [y for y in selectedY if y == 0]
+        if len(selectedY)==0:
+            return 0.5
+        return len(Yzero)/len(selectedY)
    
     def get_column(self, col, X):
         return X[:, col]
