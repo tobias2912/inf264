@@ -69,10 +69,23 @@ class Decision_tree:
         _, cols= X.shape
         col_gains = []
         for col in range(cols):
-            #print(f"getting avg of column {col}")
+            print(f"getting avg of column {col}")
             split_value = self.get_avg(col, X)
             gain = self.IG(col, split_value, X, impurity_measure)
-            #print(f"information gain: {gain}")
+            print(f"information gain: {gain}")
+            col_gains.append((col, gain, split_value))
+        #select column that gave highest information gain
+        return max(col_gains, key=lambda tup: tup[1])
+
+    def get_best_gini(self, X):
+        '''select column/feature that gives Gini'''
+        _, cols= X.shape
+        col_gains = []
+        for col in range(cols):
+            print(f"getting avg of column {col}")
+            split_value = self.get_avg(col, X)
+            gain = self.IG(col, split_value, X)
+            print(f"information gain: {gain}")
             col_gains.append((col, gain, split_value))
         #select column that gave highest information gain
         return max(col_gains, key=lambda tup: tup[1])
@@ -86,6 +99,8 @@ class Decision_tree:
             raise Exception("node is None")
         #if all y is same label, return leaf
         if np.all(y) or not np.any(y):
+            
+            print(f"node: {node}, y: {y}")
             node.y = y[0]
             return
         #if all features identical, return most common y
@@ -94,6 +109,7 @@ class Decision_tree:
             return
         #try every column to find best gain
         best_col, best_gain, split_value = self.get_best_IG(X, impurity_measure)
+        print(f"splits on {best_col}")
         # inserts data into node
         node.data = split_value
         node.column = best_col
@@ -122,11 +138,12 @@ class Decision_tree:
         column = node.column
         split_value = node.column
         if node.left is None or node.right is None:
+            print(node.y)
             return node.y
         if x[column] < split_value:
-            return self.predict(node.left, x)
+            return self.predict2(node.left, x)
         else:
-            return self.predict(node.right, x)
+            return self.predict2(node.right, x)
    
 
     #entropy of variable, not used?
@@ -156,3 +173,4 @@ class Decision_tree:
    
     def get_column(self, col, X):
         return X[:, col]
+ 

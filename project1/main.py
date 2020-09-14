@@ -13,7 +13,7 @@ def open_file(fileName):
     return np.loadtxt(open(fileName, "rb"), delimiter=",")
 
 if __name__ == "__main__":
-    liste = open_file('data_banknote_authentication.txt')
+    liste = open_file('test_data.txt')
     X = get_X(liste)
     y = get_lable(liste)
     X_train, X_test = X[:1000], X[1000:]
