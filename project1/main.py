@@ -3,22 +3,39 @@ import csv
 from tree import * 
 import os
 import sys
+import random
+import math as m
 def get_X(liste):
     return liste[:, :4]
 
-
-def get_lable(liste):
+def get_label(liste):
     return liste[:,4]
 
 def open_file(fileName): 
     return np.loadtxt(open(os.path.join(sys.path[0], fileName), "r"), delimiter=",")
 
+def test_training(liste, percentage):
+    test = []
+    training = []
+    m.seed(10)
+
+    for row in liste:
+        if m.random() < percentage:
+            test.append(row)
+        else:
+            training.append(row)
+    return np.array(test), np.array(training)
+
+
 if __name__ == "__main__":
-    liste = open_file('data_banknote_authentication.txt')
-    X = get_X(liste)
-    y = get_lable(liste)
-    X_train, X_test = X[:1000], X[1000:]
-    y_train, y_test = y[:1000], y[1000:]
+    matrix = open_file('test_data.txt')
+    X = get_X(matrix)
+    y = get_label(matrix)
+
+    test, train = test_training(matrix, 0.3)
+    X_test, X_train = get_X(test), get_X(train)
+    y_test, y_train = get_label(test), get_label(train)
+
     tree = Decision_tree()
     tree.learn(X_train, y_train, tree.root)
     wrong = 0
@@ -29,8 +46,8 @@ if __name__ == "__main__":
             correct += 1
         else:
             wrong += 1
-    print("correct and wrong predictions:",correct, wrong)
-    print(f"correctness {correct/(correct+wrong)}")
+    print(f"correct predictions: {correct}, wrong predictions: {wrong}")
+    print(f"accuracy {correct/(correct+wrong)}")
     print("------\ntesting data:")
     wrong = 0
     correct = 0
@@ -40,8 +57,8 @@ if __name__ == "__main__":
             correct += 1
         else:
             wrong += 1
-    print("correct and wrong predictions:",correct, wrong)
+    print(f"correct predictions: {correct}, wrong predictions: {wrong}")
     tree.print_tree()
     tree.predict(tree.root, np.array([1 ,2 ,1 ,2 ]))
     tree.predict(tree.root, np.array([1,1,1,2]))
-    print(f"correctness {correct/(correct+wrong)}")
+    print(f"accuracy {correct/(correct+wrong)}")
