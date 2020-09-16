@@ -14,12 +14,12 @@ def get_label(liste):
 def open_file(fileName): 
     return np.loadtxt(open(os.path.join(sys.path[0], fileName), "r"), delimiter=",")
 
-def test_training(liste, percentage):
+def split(matrix, percentage):
     test = []
     training = []
     random.seed(10)
 
-    for row in liste:
+    for row in matrix:
         if random.random() < percentage:
             test.append(row)
         else:
@@ -28,16 +28,18 @@ def test_training(liste, percentage):
 
 
 if __name__ == "__main__":
-    matrix = open_file('test_data.txt')
+    matrix = open_file('data_banknote_authentication.txt')
     X = get_X(matrix)
     y = get_label(matrix)
 
-    test, train = test_training(matrix, 0.3)
-    X_test, X_train = get_X(test), get_X(train)
-    y_test, y_train = get_label(test), get_label(train)
+    test, train_pruning = split(matrix, 0.3)
+    pruning_data, train = split(train_pruning, 0.3)
+    X_test, X_train, X_pruning = get_X(test), get_X(train), get_X(pruning_data)
+    y_test, y_train ,y_pruning = get_label(test), get_label(train), get_label(pruning_data)
 
     tree = Decision_tree()
-    tree.learn(X_train, y_train, tree.root)
+    tree.learn(X_train, y_train, tree.root, X_pruning, y_pruning, prune=True)
+    tree.prune(X_pruning, y_pruning)
     wrong = 0
     correct = 0
     for rownumber, x in enumerate(X_train):
@@ -58,7 +60,7 @@ if __name__ == "__main__":
         else:
             wrong += 1
     print(f"correct predictions: {correct}, wrong predictions: {wrong}")
-    tree.print_tree()
+    #tree.print_tree()
     tree.predict(tree.root, np.array([1 ,2 ,1 ,2 ]))
     tree.predict(tree.root, np.array([1,1,1,2]))
     print(f"accuracy {correct/(correct+wrong)}")

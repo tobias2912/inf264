@@ -6,6 +6,7 @@ class Node:
         self.left = None
         self.right = None
         self.data = data #split value
+        self.majority = None #the majority label of each node
         self.column = None # column to split on
         self.func = None
         self.y = None
@@ -74,10 +75,8 @@ class Decision_tree:
         _, cols= X.shape
         col_gains = []
         for col in range(cols):
-            print(f"getting avg of column {col}")
             split_value = self.get_avg(col, X)
             gain = self.IG(col, split_value, X, impurity_measure, y)
-            print(f"information gain for column {col}: {gain}")
             col_gains.append((col, gain, split_value))
         #select column that gave highest information gain
         return max(col_gains, key=lambda tup: tup[1])
@@ -87,36 +86,31 @@ class Decision_tree:
         _, cols= X.shape
         col_gains = []
         for col in range(cols):
-            print(f"getting avg of column {col}")
             split_value = self.get_avg(col, X)
             gain = self.IG(col, split_value, X)
-            print(f"information gain: {gain}")
             col_gains.append((col, gain, split_value))
         #select column that gave highest information gain
         return max(col_gains, key=lambda tup: tup[1])
 
-    def learn(self, X, y, node, impurity_measure='entropy'):
+    def learn(self, X, y, node,  X_pruning, y_pruning, prune=False, impurity_measure='entropy'):
         '''
         Build a decision tree with node as a root
         either calls itself recursively, or sets node as a root with a label
         '''
-        print("starts learn()")
         if node is None:
             raise Exception("node is None")
         #if all y is same label, return leaf
         if np.all(y) or not np.any(y):
             node.y = y[0]
-            print(f"creates leaf node: {node}")
             return
         #if all features identical, return most common y
         if self.all_identical(X):
             node.y = self.get_common_y(y)
-            print(f"creates leaf node: {node}")
             return
         #try every column to find best gain
         best_col, best_gain, split_value = self.get_best_IG(X, impurity_measure, y)
-        print(f"splits on {best_col}")
         # inserts data into node
+        node.majority = self.get_common_y(y)
         node.data = split_value
         node.column = best_col
         left = Node("")
@@ -136,9 +130,10 @@ class Decision_tree:
         rightX = rightXy[:,:4]
         lefty = leftXy[:,4]
         righty = rightXy[:,4]
-        self.learn(leftX, lefty, left, impurity_measure)
-        self.learn(rightX, righty, right, impurity_measure)
-
+        self.learn(leftX, lefty, left, X_pruning, y_pruning, prune = prune, impurity_measure = impurity_measure)
+        self.learn(rightX, righty, right, X_pruning, y_pruning, prune = prune, impurity_measure = impurity_measure)
+        if prune:
+            self.prune(X, y, X_pruning, y_pruning, node)
     
     def predict(self, node, x):
         '''
@@ -188,3 +183,22 @@ class Decision_tree:
     def get_column(self, col, X):
         return X[:, col]
  
+    def prune(self, X, y, X_pruning, y_pruning, node:Node):
+        #calculate current accuracy
+        wrong = 0
+        correct = 0
+        for rownumber, x in enumerate(X_pruning):
+            predicted_val = self.predict(node, x)
+            if predicted_val == y_pruning[rownumber]:
+                correct += 1
+            else:
+                wrong += 1
+        accuracy = correct/wrong
+        #compare with using node.majority
+        new_accuracy = len([a for a in y if a==node.majority]) / len(y)
+        #if better, replace node with leaf
+        if new_accuracy>=accuracy:
+            print(f"new accuracy {new_accuracy} was better than {accuracy}")
+            node.left = None
+            node.right = None
+            node.y = node.majority
