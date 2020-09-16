@@ -17,10 +17,10 @@ def open_file(fileName):
 def test_training(liste, percentage):
     test = []
     training = []
-    m.seed(10)
+    random.seed(10)
 
     for row in liste:
-        if m.random() < percentage:
+        if random.random() < percentage:
             test.append(row)
         else:
             training.append(row)
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     correct = 0
     for rownumber, x in enumerate(X_test):
         predicted_val = tree.predict(tree.root, x)
-        if predicted_val == y_train[rownumber]:
+        if predicted_val == y_test[rownumber]:
             correct += 1
         else:
             wrong += 1
