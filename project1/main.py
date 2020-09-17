@@ -4,7 +4,6 @@ from tree import *
 import os
 import sys
 import random
-import math as m
 import time
 
 def get_X(liste):
