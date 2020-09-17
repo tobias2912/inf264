@@ -182,23 +182,38 @@ class Decision_tree:
    
     def get_column(self, col, X):
         return X[:, col]
- 
-    def prune(self, X, y, X_pruning, y_pruning, node:Node):
-        #calculate current accuracy
-        wrong = 0
+
+    def find_accuracy(self, X_pruning, y_pruning):
+        wrong = 1
         correct = 0
         for rownumber, x in enumerate(X_pruning):
-            predicted_val = self.predict(node, x)
+            predicted_val = self.predict(self.root, x)
             if predicted_val == y_pruning[rownumber]:
                 correct += 1
             else:
                 wrong += 1
         accuracy = correct/wrong
-        #compare with using node.majority
-        new_accuracy = len([a for a in y if a==node.majority]) / len(y)
+        return accuracy
+
+    def prune(self, X, y, X_pruning, y_pruning, node:Node):
+        #ignore leafs
+        if node.right is None or node.left is None:
+            return
+        #calculate current accuracy
+        accuracy = self.find_accuracy(X_pruning, y_pruning)
+        #compare again with node as leaf
+        leftbackup = node.left
+        rightbackup = node.right
+        node.left = None
+        node.right = None
+        node.y = node.majority
+        
+        leafaccuracy = self.find_accuracy(X_pruning, y_pruning)
         #if better, replace node with leaf
-        if new_accuracy>=accuracy:
-            print(f"new accuracy {new_accuracy} was better than {accuracy}")
-            node.left = None
-            node.right = None
-            node.y = node.majority
+        if leafaccuracy>=accuracy:
+            print(f"new accuracy {leafaccuracy} was better/equal than {accuracy}, pruning...")
+        else:
+            node.left = leftbackup
+            node.right = rightbackup
+            node.y = None
+            

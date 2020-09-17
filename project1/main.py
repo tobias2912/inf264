@@ -39,7 +39,6 @@ if __name__ == "__main__":
 
     tree = Decision_tree()
     tree.learn(X_train, y_train, tree.root, X_pruning, y_pruning, prune=True)
-    tree.prune(X_pruning, y_pruning)
     wrong = 0
     correct = 0
     for rownumber, x in enumerate(X_train):
