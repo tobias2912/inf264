@@ -1,8 +1,10 @@
 import numpy as np
 class Node:
-
+    '''
+    A node te represent the decision tree.
+    Has two possible children left and right, and fields used for building/predicting values
+    '''
     def __init__(self, data):
-
         self.left = None
         self.right = None
         self.data = data #split value
@@ -12,6 +14,7 @@ class Node:
         self.y = None
 
     def PrintTree(self, depth):
+        '''Prints a readable format recursively'''
         if self.left is None or self.right is None:
             print ( (depth*"--") + f"Leaf Node( y {self.y})" )
             return
@@ -25,7 +28,11 @@ class Node:
         return f"Node with y: {self.y}"
 
 class Decision_tree:
-
+    '''
+    Class for representing a decision tree
+    field value root is the only reference to the tree
+    Can both build with optional parameters and predict values
+    '''
     root = Node("")
 
     def __init__(self):
@@ -81,21 +88,13 @@ class Decision_tree:
         #select column that gave highest information gain
         return max(col_gains, key=lambda tup: tup[1])
 
-    def get_best_gini(self, X):
-        '''select column/feature that gives Gini'''
-        _, cols= X.shape
-        col_gains = []
-        for col in range(cols):
-            split_value = self.get_avg(col, X)
-            gain = self.IG(col, split_value, X)
-            col_gains.append((col, gain, split_value))
-        #select column that gave highest information gain
-        return max(col_gains, key=lambda tup: tup[1])
-
     def learn(self, X, y, node,  X_pruning, y_pruning, prune=False, impurity_measure='entropy'):
         '''
         Build a decision tree with node as a root
         either calls itself recursively, or sets node as a root with a label
+
+        param prune: if true, recursively prunes each node after tree is built
+        param impurity_measure: "entropy" or "gini", calculates best feature to split
         '''
         if node is None:
             raise Exception("node is None")
@@ -184,6 +183,7 @@ class Decision_tree:
         return X[:, col]
 
     def find_accuracy(self, X_pruning, y_pruning):
+        '''return accuracy of the current tree, given test data X and y'''
         wrong = 1
         correct = 0
         for rownumber, x in enumerate(X_pruning):
@@ -196,6 +196,10 @@ class Decision_tree:
         return accuracy
 
     def prune(self, X, y, X_pruning, y_pruning, node:Node):
+        '''
+        prunes a node by "deleting" the children and comparing if accuracy
+        gets worsened. if worse, restore state before function was called.
+        '''
         #ignore leafs
         if node.right is None or node.left is None:
             return

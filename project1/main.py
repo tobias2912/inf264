@@ -16,6 +16,7 @@ def open_file(fileName):
     return np.loadtxt(open(os.path.join(sys.path[0], fileName), "r"), delimiter=",")
 
 def split(matrix, percentage):
+    '''splits a matrix row-wise with a given percentage and a set random seed'''
     test = []
     training = []
     random.seed(10)
@@ -42,6 +43,7 @@ if __name__ == "__main__":
 
     tree = Decision_tree()
     tree.learn(X_train, y_train, tree.root, X_pruning, y_pruning, prune=True, impurity_measure="gini")
+    '''testing on training data'''
     wrong = 0
     correct = 0
     for rownumber, x in enumerate(X_train):
@@ -52,6 +54,8 @@ if __name__ == "__main__":
             wrong += 1
     print(f"correct predictions: {correct}, wrong predictions: {wrong}")
     print(f"accuracy {correct/(correct+wrong)}")
+
+    '''testing on test data'''
     print("------\ntesting data:")
     wrong = 0
     correct = 0
@@ -62,8 +66,5 @@ if __name__ == "__main__":
         else:
             wrong += 1
     print(f"correct predictions: {correct}, wrong predictions: {wrong}")
-    #tree.print_tree()
-    tree.predict(tree.root, np.array([1 ,2 ,1 ,2 ]))
-    tree.predict(tree.root, np.array([1,1,1,2]))
     print(f"accuracy {correct/(correct+wrong)}")
     print("--- %s seconds ---" % (time.time() - start_time))
