@@ -5,6 +5,8 @@ import os
 import sys
 import random
 import math as m
+import time
+
 def get_X(liste):
     return liste[:, :4]
 
@@ -32,13 +34,15 @@ if __name__ == "__main__":
     X = get_X(matrix)
     y = get_label(matrix)
 
+    start_time = time.time()
+
     test, train_pruning = split(matrix, 0.3)
     pruning_data, train = split(train_pruning, 0.3)
     X_test, X_train, X_pruning = get_X(test), get_X(train), get_X(pruning_data)
     y_test, y_train ,y_pruning = get_label(test), get_label(train), get_label(pruning_data)
 
     tree = Decision_tree()
-    tree.learn(X_train, y_train, tree.root, X_pruning, y_pruning, prune=True)
+    tree.learn(X_train, y_train, tree.root, X_pruning, y_pruning, prune=True, impurity_measure="gini")
     wrong = 0
     correct = 0
     for rownumber, x in enumerate(X_train):
@@ -63,3 +67,4 @@ if __name__ == "__main__":
     tree.predict(tree.root, np.array([1 ,2 ,1 ,2 ]))
     tree.predict(tree.root, np.array([1,1,1,2]))
     print(f"accuracy {correct/(correct+wrong)}")
+    print("--- %s seconds ---" % (time.time() - start_time))
