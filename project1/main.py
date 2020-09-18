@@ -28,7 +28,6 @@ def split(matrix, percentage):
             training.append(row)
     return np.array(test), np.array(training)
 
-
 if __name__ == "__main__":
     matrix = open_file('data_banknote_authentication.txt')
     X = get_X(matrix)
@@ -42,7 +41,7 @@ if __name__ == "__main__":
     y_test, y_train ,y_pruning = get_label(test), get_label(train), get_label(pruning_data)
 
     tree = Decision_tree()
-    tree.learn(X_train, y_train, tree.root, X_pruning, y_pruning, prune=True, impurity_measure="gini")
+    tree.learn(X_train, y_train, tree.root, X_pruning, y_pruning, prune=False, impurity_measure="entropy")
     '''testing on training data'''
     wrong = 0
     correct = 0
